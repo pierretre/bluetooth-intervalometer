@@ -18,30 +18,56 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
+    static final UUID btUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
+    private BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
-        Toast t = Toast.makeText(getApplicationContext(), btAdapter.getBondedDevices().toString(), Toast.LENGTH_LONG);
-        t.show();
 
+        connectBT();
+
+
+
+
+
+
+    }
+
+    private void connectBT(){
+        try {
+            enableBT();
+            BluetoothDevice intervalometer_hc05 = btAdapter.getRemoteDevice("98:D3:21:F7:50:63");
+
+            BluetoothSocket btSocket = intervalometer_hc05.createInsecureRfcommSocketToServiceRecord(btUUID);
+
+
+            while(!btSocket.isConnected())
+                btSocket.connect();
+            Toast.makeText(getApplicationContext(), "connected to BT", Toast.LENGTH_LONG).show();
+
+        }catch (Exception e){
+            e.printStackTrace();
+            Toast.makeText(getApplicationContext(), "Exception : couldn't connect to BT", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void enableBT(){
         if(btAdapter == null){
-            Toast toast = Toast.makeText(getApplicationContext(), "can't find bluetooth adapter", Toast.LENGTH_SHORT);
-            toast.show();
+            Toast.makeText(getApplicationContext(), "can't find bluetooth adapter", Toast.LENGTH_SHORT).show();
         }
         if(!btAdapter.isEnabled()){
-            Toast toast = Toast.makeText(getApplicationContext(), "bluetooth not enabled", Toast.LENGTH_SHORT);
-            toast.show();
+            Toast.makeText(getApplicationContext(), "bluetooth not enabled", Toast.LENGTH_SHORT).show();
 
             Intent enableBT = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivity(enableBT);
         }
         if(btAdapter.isEnabled()){
-            Toast toast = Toast.makeText(getApplicationContext(), "bluetooth enabled, it's all good", Toast.LENGTH_SHORT);
-            toast.show();
+            Toast.makeText(getApplicationContext(), "bluetooth enabled, it's all good", Toast.LENGTH_SHORT).show();
         }
-
     }
 }

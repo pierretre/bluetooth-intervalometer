@@ -65,7 +65,7 @@ void loop() {
     //mySerial.println("Total number of pictures : " + String(pics_number) + "\n");
     //mySerial.println("Total time : " + String(hours) + "h" + (minutes % 60) + "m" + (s + 1) + "s\n");
 
-    mySerial.print("STATUS|RUNNING|Take a photo every : " + String(delay_duration) + "s:Total number of pictures : " + String(pics_number) +":Total time : " + String(hours) + "h" + String(minutes % 60) + "m" + String(s + 1) + "s\n");
+    mySerial.print("STATUS|RUNNING|Take a photo every : " + String(delay_duration)  + "s:Total number of pictures : " + String(pics_number) +":Total time : " + String(hours) + "h" + String(minutes % 60) + "m" + String(s + 1) + "s\n");
     
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
     // take pictures while the number of pics taken does not exceed the number of pics filled in by the user

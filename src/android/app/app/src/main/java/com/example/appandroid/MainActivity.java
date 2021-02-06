@@ -14,24 +14,35 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.util.Set;
 import java.util.UUID;
 
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private BluetoothAdapter btAdapter;
     private BluetoothDevice hc05_device;
     private BluetoothCommunicationThread bluetoothComThread;
+
+
     private Button connectBtn;
     private Button intervalBtn;
+    private TextView status;
+    private TextView state;
+    private Spinner shutterSpeedSpinner;
+
+    private boolean autoConnect=false;
 
     @Override
     /**
@@ -41,10 +52,86 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        hc05_device=null;
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         bluetoothComThread=null;
 
+        Toolbar toolbar = findViewById(R.id.my_toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+
+        state = findViewById(R.id.state);
+        status = findViewById(R.id.status);
+
+        intervalBtn = findViewById(R.id.intervalBtn);
+        intervalBtn.setOnClickListener(this);
+
+        connectBtn = findViewById(R.id.connectBtn);
+        connectBtn.setOnClickListener(this);
+
+        shutterSpeedSpinner = findViewById(R.id.spinner);
+        String[] textSizes = getResources().getStringArray(R.array.font_sizes);
+
+        ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_spinner_item, textSizes){
+            public View getView(int position, View convertView, ViewGroup parent) {
+                View v = super.getView(position, convertView, parent);
+//                ((TextView) v).setTextSize(30);
+//                ((TextView) v).setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                ((TextView) v).setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
+                return v;
+            }
+
+            public View getDropDownView(int position, View convertView,ViewGroup parent) {
+                View v = super.getDropDownView(position, convertView,parent);
+                ((TextView) v).setGravity(Gravity.CENTER);
+                return v;
+            }
+        };
+
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        shutterSpeedSpinner.setAdapter(adapter);
+        shutterSpeedSpinner.setOnItemSelectedListener(new ShutterSpeedAdapter());
+
+        Toast.makeText(getApplicationContext(), shutterSpeedSpinner.getSelectedItem().toString(), Toast.LENGTH_SHORT).show();
+        disconnect();
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch(view.getId()){
+            case R.id.intervalBtn:
+                if(String.valueOf(intervalBtn.getText()).equals("begin shooting photos")) {
+                    bluetoothComThread.send("STATUS");
+                }else if(String.valueOf(intervalBtn.getText()).equals("begin shooting photos")){
+                    bluetoothComThread.send("STATUS");
+                }
+                break;
+
+            case R.id.connectBtn:
+                if(String.valueOf(connectBtn.getText()).equals("connect")) {
+                    BluetoothConnectThread btct=new BluetoothConnectThread(hc05_device, btAdapter);
+                    connectBtn.setEnabled(false);
+                }else if(String.valueOf(connectBtn.getText()).equals("disconnect")){
+                    disconnect();
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        Log.e("APP", "onPause()");
+        Toast.makeText(getApplicationContext(), "PAUSE", Toast.LENGTH_SHORT).show();
+        disconnect();
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+//        Toast.makeText(getApplicationContext(), "RESUME", Toast.LENGTH_SHORT).show();
+        hc05_device=null;
         Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
         if (pairedDevices.size() != 0){
             for (BluetoothDevice device : pairedDevices) {
@@ -52,38 +139,38 @@ public class MainActivity extends AppCompatActivity {
                     hc05_device=device;
             }
         }
+        if(autoConnect){
+            BluetoothConnectThread btct=new BluetoothConnectThread(hc05_device, btAdapter);
+            connectBtn.setEnabled(false);
+        }
+        super.onResume();
+    }
 
-        Toolbar toolbar = findViewById(R.id.my_toolbar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
+    private void disconnect(){
+        if(bluetoothComThread!=null && bluetoothComThread.isAlive()){
+            bluetoothComThread.closeSocket();
+        }
+        intervalBtn.setEnabled(false);
+        connectBtn.setEnabled(true);
+        intervalBtn.setText("begin shooting photos");
+        connectBtn.setText("connect");
+        state.setText("DISCONNECTED");
+        state.setTextColor(getResources().getColor(R.color.disconnected));
+    }
 
-        // the button that begins the take of photos
-        intervalBtn= (Button) findViewById(R.id.intervalBtn);
-        intervalBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(String.valueOf(intervalBtn.getText()).equals("begin shooting photos")) {
-                    bluetoothComThread.send("STATUS");
-                }else if(String.valueOf(intervalBtn.getText()).equals("begin shooting photos")){
-                    bluetoothComThread.send("STATUS");
-                }
+    private class ShutterSpeedAdapter implements AdapterView.OnItemSelectedListener {
+
+        @Override
+        public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+            if (adapterView.getId() == R.id.spinner) {
+                String shutterSpeedValue = adapterView.getItemAtPosition(i).toString();
             }
-        });
+        }
 
-        connectBtn = findViewById(R.id.connect);
-        connectBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(String.valueOf(connectBtn.getText()).equals("connect")) {
-                    BluetoothConnectThread btct=new BluetoothConnectThread(hc05_device, btAdapter);
-                    connectBtn.setEnabled(false);
-                }else if(String.valueOf(connectBtn.getText()).equals("disconnect")){
-                    disconnect();
-                }
-            }
-        });
+        @Override
+        public void onNothingSelected(AdapterView<?> adapterView) {
 
-        disconnect();
+        }
     }
 
     private class BluetoothPairThread extends Thread{
@@ -94,6 +181,9 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void run() {
+
+            state.setText("DISCOVERING");
+            state.setTextColor(getResources().getColor(R.color.pairing));
 
             Log.e("BT pair", "find and pair device");
 
@@ -114,6 +204,10 @@ public class MainActivity extends AppCompatActivity {
             }
 
             if(device!=null){
+                state.setText("PAIRING");
+                status.setText("device ON");
+                state.setTextColor(getResources().getColor(R.color.pairing));
+
                 Log.e("BT pair thread", "found device "+device.getName());
                 isPairing=true;
                 IntentFilter intent = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
@@ -137,6 +231,8 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 }
+            }else{
+                status.setText("device OFF");
             }
             runOnUiThread(new Runnable() {
                 @Override
@@ -211,8 +307,6 @@ public class MainActivity extends AppCompatActivity {
                     device=hc05_device;
             }
 
-            Log.e("Connect", "beginning connection");
-
             BluetoothSocket tmp = null;
             UUID uuid = device.getUuids()[0].getUuid();
             try {
@@ -226,6 +320,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         public void run(){
+            state.setText("CONNECTING");
+            state.setTextColor(getResources().getColor(R.color.connecting));
             try {
                 btSocket.connect();
             } catch (IOException connectException) {
@@ -240,6 +336,8 @@ public class MainActivity extends AppCompatActivity {
                     public void run() {
                         connectBtn.setEnabled(true);
                         Toast.makeText(getApplicationContext(), "Cannot connect to device, please try again", Toast.LENGTH_SHORT).show();
+                        state.setText("DISCONNECTED");
+                        state.setTextColor(getResources().getColor(R.color.disconnected));
                     }
                 });
                 return;
@@ -253,123 +351,10 @@ public class MainActivity extends AppCompatActivity {
                     connectBtn.setText("disconnect");
                 }
             });
+            state.setText("CONNECTED");
+            state.setTextColor(getResources().getColor(R.color.connected));
             bluetoothComThread=new BluetoothCommunicationThread(this.btSocket);
             bluetoothComThread.start();
         }
-    }
-
-    private static class BluetoothCommunicationThread extends Thread {
-
-        private InputStream input;
-        private OutputStream output;
-        private BluetoothSocket socket;
-
-        public BluetoothCommunicationThread(BluetoothSocket socket){
-            this.socket=socket;
-            try{
-                this.input=socket.getInputStream();
-                this.output=socket.getOutputStream();
-            }catch(IOException ioe){
-                ioe.printStackTrace();
-            }
-        }
-
-        public void run(){
-
-            send("STATUS");
-
-            byte[] messageIn=new byte[1024];
-            String inputString=null;
-            int byteIndex=0;
-            String[] message;
-
-            // Listens to the input of the bluetooth socket to read incoming messages
-            while(socket.isConnected()) {
-                try {
-                    Log.e("Status", "Listening on socket input");
-
-                    messageIn[byteIndex] = (byte) this.input.read();
-                    if (messageIn[byteIndex] == '\n') {
-                        inputString = new String(messageIn, 0, byteIndex);
-                        Log.e("Arduino Message", inputString);
-//                        handler.obtainMessage(MESSAGE_READ,readMessage).sendToTarget();
-                        byteIndex = 0;
-                    } else {
-                        byteIndex++;
-                    }
-
-                    // if the message was received entirely
-                    if (byteIndex == 0) {
-                        message = inputString.trim().split("|");
-
-                        if (message[0] == "STATUS") {
-                            if (message[1] == "RUNNING") {
-                                // Sets the state of the app to running
-                                // if message[2]!=null:
-                                // OK : prints the message (message[2]) coming from arduino
-
-                                if (message[2] != null)
-                                    Log.e("STATUS = RUNNING ", message[2]);
-                                else
-                                    Log.e("STATUS = RUNNING ", "no message");
-
-                            } else if (message[1] == "WAITING") {
-                                // Sets the state of the app to waiting
-                                // if message[2]!=null:
-                                // ERROR : prints the error message (message[2]) coming from arduino
-
-                                if (message[2] != null)
-                                    Log.e("STATUS = WAITING ", message[2]);
-                                else
-                                    Log.e("STATUS = WAITING ", "no error");
-                            }
-                        } else {
-
-                        }
-                    }
-                } catch (IOException ioe) {
-                    ioe.printStackTrace();
-                    try{
-                        socket.close();
-                    }catch (IOException ioe2){
-                        Log.e("ERROR", ioe2.getMessage());
-                    }
-                }
-            }
-        }
-
-        public void send(String command){
-            try{
-                byte[] bytes = command.getBytes();
-                this.output.write(bytes);
-            }catch(IOException ioe){
-                ioe.printStackTrace();
-            }
-        }
-
-        public void closeSocket(){
-            try{
-                socket.close();
-            }catch (IOException ioe){
-                Log.e("ERROR", ioe.getMessage());
-            }
-        }
-    }
-
-    @Override
-    protected void onPause() {
-        Log.e("APP", "onPause()");
-        disconnect();
-        super.onPause();
-    }
-
-    private void disconnect(){
-        if(bluetoothComThread!=null && bluetoothComThread.isAlive()){
-            bluetoothComThread.closeSocket();
-        }
-        intervalBtn.setEnabled(false);
-        connectBtn.setEnabled(true);
-        intervalBtn.setText("begin shooting photos");
-        connectBtn.setText("connect");
     }
 }

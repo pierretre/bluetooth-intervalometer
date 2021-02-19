@@ -1,9 +1,5 @@
 package com.example.appandroid;
 
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.util.Log;
-
 public class BluetoothIntervalometerViewModel {
 
     private int interval;
@@ -38,8 +34,9 @@ public class BluetoothIntervalometerViewModel {
         this.timerDelay=ret;
     }
 
-    public void setPicturesNumber(int nb){
-        this.picturesNumber=nb;
+    public void setPicturesNumber(String nb){
+        if(nb!=null && !nb.equals(""))
+            this.picturesNumber = Integer.parseInt(nb);
     }
 
     public String getRunCommand(){

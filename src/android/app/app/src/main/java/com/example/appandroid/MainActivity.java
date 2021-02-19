@@ -24,9 +24,6 @@ import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, BluetoothIntentService.Callbacks {
 
-//    private BluetoothAdapter btAdapter;
-//    private BluetoothDevice hc05_device;
-
     private Button connectBtn;
     private Button intervalBtn;
     private ImageButton pictureBtn;
@@ -40,16 +37,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private BluetoothIntervalometerViewModel model;
 
     @Override
-    /**
-     *
-     */
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         initUI();
 
-        this.model=new BluetoothIntervalometerViewModel();
+        this.model = new BluetoothIntervalometerViewModel();
 
         bluetoothIntentService = new Intent(getApplicationContext(), BluetoothIntentService.class);
 
@@ -62,16 +56,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch(view.getId()){
             case R.id.intervalBtn:
                 if(String.valueOf(intervalBtn.getText()).equals("start")) {
-                    EditText nbPics = findViewById(R.id.nbPics);
-                    this.model.setPicturesNumber(Integer.parseInt(nbPics.getText().toString()));
+                    if(myService!=null){
+                        EditText nbPics = findViewById(R.id.nbPics);
+                        this.model.setPicturesNumber(nbPics.getText().toString());
 
-                    String run = this.model.getRunCommand(); //returns null if the values aren't right
-                    if(run==null)
-                        Toast.makeText(getApplicationContext(), R.string.valuesNotRightMessage, Toast.LENGTH_SHORT).show();
+                        String run = this.model.getRunCommand(); //returns null if the values aren't right
+                        if(run==null)
+                            Toast.makeText(getApplicationContext(), R.string.badValuesError, Toast.LENGTH_SHORT).show();
 
-                    Toast.makeText(getApplicationContext(), "RUN = "+run, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), "RUN = "+run, Toast.LENGTH_SHORT).show();
 
+                        TextView time = findViewById(R.id.totalTime);
+                        time.setText(model.getTotalTime());
 //                    bluetoothComThread.send("STATUS");
+                    }else
+                        Toast.makeText(myService, R.string.notConnectedError, Toast.LENGTH_SHORT).show();
                 }else if(String.valueOf(intervalBtn.getText()).equals("stop")){
                     //TODO
                 }
@@ -79,10 +78,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.connectBtn:
                 if(String.valueOf(connectBtn.getText()).equals("connect")) {
-
                     stopService(bluetoothIntentService);
                     startService(bluetoothIntentService);
-                    bindService(bluetoothIntentService, mConnection, Context.BIND_AUTO_CREATE);
+                    bindService(bluetoothIntentService, serviceConnection, Context.BIND_AUTO_CREATE);
 
                 }else if(String.valueOf(connectBtn.getText()).equals("disconnect")){
 //                    Toast.makeText(MainActivity.this, "disconnect", Toast.LENGTH_SHORT).show();
@@ -118,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private ServiceConnection mConnection = new ServiceConnection() {
+    private ServiceConnection serviceConnection = new ServiceConnection() {
 
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
@@ -132,12 +130,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     ((BluetoothIntentService) myService).connect();
                 }
             }).start();
-            Toast.makeText(getApplicationContext(), "onServiceConnected called", Toast.LENGTH_SHORT).show();
+            Log.e("MAIN", "onServiceConnected");
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
-            Toast.makeText(getApplicationContext(), "onServiceDisconnected called", Toast.LENGTH_SHORT).show();
+            Log.e("MAIN", "onServiceDisconnected");
         }
     };
 
@@ -165,28 +163,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onPause() {
-//        Toast.makeText(getApplicationContext(), "isActivityTransitionRunning : "+String.valueOf(isActivityTransitionRunning()), Toast.LENGTH_SHORT).show();
-//        Toast.makeText(getApplicationContext(), "isFinishing : "+String.valueOf(isFinishing()), Toast.LENGTH_SHORT).show();
         Log.e("MAIN", "onPause");
         super.onPause();
     }
 
     @Override
     protected void onResume() {
-//        myService=null;
         super.onResume();
     }
 
     private void disconnect(){
         if(myService!=null)
-            unbindService(mConnection);
+            unbindService(serviceConnection);
         stopService(bluetoothIntentService);
 
         intervalBtn.setEnabled(false);
         pictureBtn.setEnabled(false);
         connectBtn.setEnabled(true);
-        intervalBtn.setText("start");
-        connectBtn.setText("connect");
+        intervalBtn.setText(R.string.startBtn);
+        connectBtn.setText(R.string.connectBtn);
         state.setText(R.string.disconnectedState);
         state.setTextColor(getResources().getColor(R.color.disconnected));
     }
@@ -203,6 +198,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         intervalBtn.setOnClickListener(this);
 
         connectBtn = findViewById(R.id.connectBtn);
+        connectBtn.setText(R.string.connectBtn);
         connectBtn.setOnClickListener(this);
 
         pictureBtn = findViewById(R.id.pictureBtn);
@@ -222,6 +218,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void run() {
                 switch (action){
                     case "DISCOVERING":
+                        connectBtn.setEnabled(false);
                         state.setText(R.string.discoveringState);
                         state.setTextColor(getResources().getColor(R.color.pairing));
                         break;
@@ -232,6 +229,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         break;
 
                     case "CONNECTING":
+                        connectBtn.setEnabled(false);
                         state.setText(R.string.connectingState);
                         state.setTextColor(getResources().getColor(R.color.connecting));
                         break;
@@ -244,23 +242,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         intervalBtn.setEnabled(true);
                         pictureBtn.setEnabled(true);
                         connectBtn.setEnabled(true);
-                        connectBtn.setText("disconnect");
+                        connectBtn.setText(R.string.disconnectBtn);
                         state.setText(R.string.connectedState);
                         state.setTextColor(getResources().getColor(R.color.connected));
                         break;
 
                     case "DISCOVERING_ERROR":
-                        Toast.makeText(getApplicationContext(), "No device found, make sure the intervalometer is powered", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), R.string.discoverError, Toast.LENGTH_SHORT).show();
                         disconnect();
                         break;
 
                     case "PAIRING_ERROR":
-                        Toast.makeText(getApplicationContext(), "You must connect to the the bluetooth device", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), R.string.pairError, Toast.LENGTH_SHORT).show();
                         disconnect();
                         break;
 
                     case "CONNECTING_ERROR":
-                        Toast.makeText(getApplicationContext(), "Cannot connect to device, please try again", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), R.string.connectError, Toast.LENGTH_SHORT).show();
                         disconnect();
                         break;
 

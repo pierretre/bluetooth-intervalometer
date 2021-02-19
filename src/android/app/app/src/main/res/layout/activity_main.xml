@@ -156,7 +156,8 @@
         <LinearLayout
             style="@android:style/Widget.DeviceDefault.Button.Borderless.Small"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
             android:orientation="horizontal">
 
             <TextView
@@ -173,8 +174,26 @@
                 android:layout_weight="1"
                 android:ems="0"
                 android:hint="0"
+                android:inputType="numberDecimal"
+                android:textAlignment="center" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            style="@android:style/Widget.DeviceDefault.Button.Borderless.Small"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/totalTime"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:textAlignment="center"
-                android:inputType="numberDecimal" />
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textColor="#2AFFFFFF"
+                android:textSize="12sp" />
 
         </LinearLayout>
 
@@ -194,8 +213,8 @@
     <ImageButton
         android:id="@+id/pictureBtn"
         style="@android:style/Widget.Material.Light.ImageButton"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"

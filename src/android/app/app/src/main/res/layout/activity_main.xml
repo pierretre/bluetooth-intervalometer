@@ -7,6 +7,22 @@
     tools:context=".MainActivity">
 
 
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/my_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_editor_absoluteX="0dp" />
+
+    <Button
+        android:id="@+id/connectBtn"
+        android:layout_width="110dp"
+        android:layout_height="56dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <LinearLayout
         android:id="@+id/linearLayout"
         android:layout_width="match_parent"
@@ -18,7 +34,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.25">
+        app:layout_constraintVertical_bias="0.17000002">
 
         <TextView
             android:id="@+id/state"
@@ -28,48 +44,38 @@
             android:text="TextView"
             android:textAlignment="center"
             android:textAppearance="@style/TextAppearance.AppCompat.Large"
-            android:textSize="25sp" />
+            android:textSize="18sp" />
 
-        <LinearLayout
-            style="@android:style/Widget.DeviceDefault.Button.Borderless.Small"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal">
+<!--        <LinearLayout-->
+<!--            style="@android:style/Widget.DeviceDefault.Button.Borderless.Small"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="match_parent"-->
+<!--            android:orientation="horizontal">-->
 
-            <TextView
-                android:id="@+id/textView2"
-                android:layout_width="70dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="status :"
-                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                android:textSize="22sp"
-                android:textStyle="bold" />
+<!--            <TextView-->
+<!--                android:id="@+id/nbText"-->
+<!--                android:layout_width="70dp"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_weight="1"-->
+<!--                android:text="status :"-->
+<!--                android:textAppearance="@style/TextAppearance.AppCompat.Medium"-->
+<!--                android:textSize="22sp"-->
+<!--                android:textStyle="bold" />-->
 
-            <TextView
-                android:id="@+id/status"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="3"
-                android:textAlignment="center"
-                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                android:textSize="22sp" />
+<!--            <TextView-->
+<!--                android:id="@+id/status"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="match_parent"-->
+<!--                android:layout_weight="3"-->
+<!--                android:textAlignment="center"-->
+<!--                android:textAppearance="@style/TextAppearance.AppCompat.Medium"-->
+<!--                android:textSize="22sp" />-->
 
-        </LinearLayout>
+<!--        </LinearLayout>-->
 
     </LinearLayout>
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/my_toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
-        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:layout_editor_absoluteX="0dp"/>
-
     <LinearLayout
-        android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="25dp"
@@ -79,7 +85,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.57">
+        app:layout_constraintVertical_bias="0.41000003">
 
         <LinearLayout
             style="@android:style/Widget.DeviceDefault.Button.Borderless.Small"
@@ -88,27 +94,29 @@
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/textView2"
                 android:layout_width="70dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="3"
-                android:text="@string/shutter"
+                android:layout_weight="2"
+                android:text="@string/interval"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
 
-<!--            <EditText-->
-<!--                android:id="@+id/editTextNumberDecimal"-->
-<!--                android:layout_width="wrap_content"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_weight="1"-->
-<!--                android:ems="0"-->
-<!--                android:inputType="numberDecimal" />-->
-
-            <Spinner
-                android:id="@+id/spinner"
+            <EditText
+                android:id="@+id/interval"
                 android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:layout_below="@+id/txttitle"
-                android:layout_weight="1" />
+                android:layout_height="wrap_content"
+                android:layout_weight="1.5"
+                android:ems="0"
+                android:hint="none"
+                android:textAlignment="center"
+                android:enabled="false"/>
+
+            <Button
+                android:id="@+id/setIntervalBtn"
+                android:layout_width="30dp"
+                android:layout_height="40dp"
+                android:layout_weight=".5"
+                android:text="edit"
+                android:textSize="10sp" />
 
         </LinearLayout>
 
@@ -119,20 +127,30 @@
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/textView2"
                 android:layout_width="70dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="2"
-                android:text="@string/gappictures"
+                android:text="@string/delay"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
 
             <EditText
-                android:id="@+id/editTextNumberDecimal"
+                android:id="@+id/timer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_weight="1.5"
                 android:ems="0"
-                android:inputType="numberDecimal" />
+                android:hint="none"
+                android:textAlignment="center"
+                android:enabled="false"/>
+
+            <Button
+                android:id="@+id/setTimerBtn"
+                android:layout_width="30dp"
+                android:layout_height="40dp"
+                android:layout_weight=".5"
+                android:text="edit"
+                android:textSize="10sp" />
+
         </LinearLayout>
 
         <LinearLayout
@@ -142,7 +160,6 @@
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/textView2"
                 android:layout_width="70dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="2"
@@ -150,13 +167,17 @@
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
 
             <EditText
-                android:id="@+id/editTextNumberDecimal"
+                android:id="@+id/nbPics"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:ems="0"
+                android:hint="0"
+                android:textAlignment="center"
                 android:inputType="numberDecimal" />
+
         </LinearLayout>
+
     </LinearLayout>
 
     <Button
@@ -168,14 +189,20 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.82" />
+        app:layout_constraintVertical_bias="0.689" />
 
-    <Button
-        android:id="@+id/connectBtn"
-        android:layout_width="110dp"
-        android:layout_height="56dp"
+    <ImageButton
+        android:id="@+id/pictureBtn"
+        style="@android:style/Widget.Material.Light.ImageButton"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/intervalBtn"
+        app:layout_constraintVertical_bias="0.124"
+        app:srcCompat="@android:drawable/ic_menu_camera" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

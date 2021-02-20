@@ -16,11 +16,11 @@
     <string name="hours">h</string>
 
     <!--    bluetooth connection error messages -->
-    <string name="connectError">cannot connect to device : make sure it is ON</string>
-    <string name="badValuesError">you must set an interval value and take at least one picture</string>
-    <string name="notConnectedError">you must connect to the device before starting shooting photos</string>
-    <string name="pairError">cannot pair to device : make sure you allow pairing</string>
-    <string name="discoverError">cannot find the device : make sure it is ON</string>
+    <string name="connectError">Cannot connect to the device, please try again</string>
+    <string name="badValuesError">You must set an interval value and take at least one picture</string>
+    <string name="notConnectedError">You must connect to the device before starting shooting photos</string>
+    <string name="pairError">Cannot pair to the device : make sure you allow pairing</string>
+    <string name="discoverError">Cannot find the device : make sure it is powered</string>
 
     <string name="connectBtn">connect</string>
     <string name="disconnectBtn">disconnect</string>

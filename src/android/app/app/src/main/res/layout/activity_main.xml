@@ -9,71 +9,48 @@
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/my_toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
         android:background="?attr/colorPrimary"
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:layout_editor_absoluteX="0dp" />
-
-    <Button
-        android:id="@+id/connectBtn"
-        android:layout_width="110dp"
-        android:layout_height="56dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <LinearLayout
-        android:id="@+id/linearLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="25dp"
-        android:layout_marginEnd="25dp"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.17000002">
+        app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:id="@+id/state"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:text="TextView"
-            android:textAlignment="center"
-            android:textAppearance="@style/TextAppearance.AppCompat.Large"
-            android:textSize="18sp" />
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            tools:layout_editor_absoluteX="16dp">
 
-<!--        <LinearLayout-->
-<!--            style="@android:style/Widget.DeviceDefault.Button.Borderless.Small"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="match_parent"-->
-<!--            android:orientation="horizontal">-->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
-<!--            <TextView-->
-<!--                android:id="@+id/nbText"-->
-<!--                android:layout_width="70dp"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_weight="1"-->
-<!--                android:text="status :"-->
-<!--                android:textAppearance="@style/TextAppearance.AppCompat.Medium"-->
-<!--                android:textSize="22sp"-->
-<!--                android:textStyle="bold" />-->
+                <Button
+                    android:id="@+id/connectBtn"
+                    android:layout_width="110dp"
+                    android:layout_height="56dp"
+                    android:layout_gravity="right"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-<!--            <TextView-->
-<!--                android:id="@+id/status"-->
-<!--                android:layout_width="wrap_content"-->
-<!--                android:layout_height="match_parent"-->
-<!--                android:layout_weight="3"-->
-<!--                android:textAlignment="center"-->
-<!--                android:textAppearance="@style/TextAppearance.AppCompat.Medium"-->
-<!--                android:textSize="22sp" />-->
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-<!--        </LinearLayout>-->
+            <TextView
+                android:id="@+id/state"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="10dp"
+                android:text="TextView"
+                android:textAlignment="center"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                android:textSize="18sp" />
 
-    </LinearLayout>
+        </LinearLayout>
+
+    </androidx.appcompat.widget.Toolbar>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -88,6 +65,7 @@
         app:layout_constraintVertical_bias="0.41000003">
 
         <LinearLayout
+            android:id="@+id/setIntervalLayout"
             style="@android:style/Widget.DeviceDefault.Button.Borderless.Small"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -106,9 +84,9 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1.5"
                 android:ems="0"
+                android:enabled="false"
                 android:hint="none"
-                android:textAlignment="center"
-                android:enabled="false"/>
+                android:textAlignment="center" />
 
             <Button
                 android:id="@+id/setIntervalBtn"
@@ -121,6 +99,7 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/setTimerLayout"
             style="@android:style/Widget.DeviceDefault.Button.Borderless.Small"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -139,9 +118,9 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1.5"
                 android:ems="0"
+                android:enabled="false"
                 android:hint="none"
-                android:textAlignment="center"
-                android:enabled="false"/>
+                android:textAlignment="center" />
 
             <Button
                 android:id="@+id/setTimerBtn"
@@ -192,7 +171,6 @@
                 android:layout_height="match_parent"
                 android:textAlignment="center"
                 android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                android:textColor="#2AFFFFFF"
                 android:textSize="12sp" />
 
         </LinearLayout>

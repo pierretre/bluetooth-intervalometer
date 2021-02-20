@@ -7,11 +7,14 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -57,22 +60,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.intervalBtn:
                 if(String.valueOf(intervalBtn.getText()).equals("start")) {
                     if(myService!=null){
-                        EditText nbPics = findViewById(R.id.nbPics);
-                        this.model.setPicturesNumber(nbPics.getText().toString());
-
                         String run = this.model.getRunCommand(); //returns null if the values aren't right
                         if(run==null)
                             Toast.makeText(getApplicationContext(), R.string.badValuesError, Toast.LENGTH_SHORT).show();
 
                         Toast.makeText(getApplicationContext(), "RUN = "+run, Toast.LENGTH_SHORT).show();
+                        Log.e("RUN", run);
 
-                        TextView time = findViewById(R.id.totalTime);
-                        time.setText(model.getTotalTime());
-//                    bluetoothComThread.send("STATUS");
+                        myService.send(run);
+                        intervalBtn.setText(R.string.stopBtn);
                     }else
-                        Toast.makeText(myService, R.string.notConnectedError, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), R.string.notConnectedError, Toast.LENGTH_SHORT).show();
                 }else if(String.valueOf(intervalBtn.getText()).equals("stop")){
-                    //TODO
+                    myService.send("STOP");
+                    intervalBtn.setText(R.string.startBtn);
                 }
                 break;
 
@@ -94,6 +95,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
             case R.id.setIntervalBtn:
+            case R.id.setIntervalLayout:
                 Intent interval = new Intent(getApplicationContext(), TimePickingActivity.class);
                 interval.putExtra("request", "interval");
                 EditText et = findViewById(R.id.interval);
@@ -103,6 +105,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
             case R.id.setTimerBtn:
+            case R.id.setTimerLayout:
                 Intent timer = new Intent(getApplicationContext(), TimePickingActivity.class);
                 timer.putExtra("request", "timer");
                 EditText ett = findViewById(R.id.timer);
@@ -139,6 +142,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     };
 
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -158,6 +162,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     et.setText(val);
                 model.setTimerDelay(val);
             }
+            updateIndicatorMessage();
         }
     }
 
@@ -191,6 +196,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setSupportActionBar(toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
 
+        EditText nbPics = findViewById(R.id.nbPics);
+        nbPics.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) { }
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                Log.e("TEXT CHANGED", "new text = "+charSequence);
+                model.setPicturesNumber(nbPics.getText().toString());
+                updateIndicatorMessage();
+            }
+            @Override
+            public void afterTextChanged(Editable editable) { }
+        });
+
         state = findViewById(R.id.state);
 //        status = findViewById(R.id.status);
 
@@ -205,10 +224,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         pictureBtn.setOnClickListener(this);
 
         Button setIntervalBtn = findViewById(R.id.setIntervalBtn);
+        LinearLayout setIntervalLayout = findViewById(R.id.setIntervalLayout);
         setIntervalBtn.setOnClickListener(this);
+        setIntervalLayout.setOnClickListener(this);
 
         Button setTimerBtn = findViewById(R.id.setTimerBtn);
+        LinearLayout setTimerLayout = findViewById(R.id.setTimerLayout);
         setTimerBtn.setOnClickListener(this);
+        setTimerLayout.setOnClickListener(this);
+    }
+
+    private void updateIndicatorMessage(){
+        TextView time = findViewById(R.id.totalTime);
+        time.setText(model.getTotalTime());
     }
 
     @Override

@@ -61,7 +61,7 @@ public class BluetoothIntentService extends IntentService {
         super.onStartCommand(intent, startId, startId);
         Log.e("SERVICE", "onStartCommand");
         try {
-            Thread.sleep(100);
+            Thread.sleep(500);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -217,7 +217,7 @@ public class BluetoothIntentService extends IntentService {
         }
     }
 
-    private void send(String str){
+    public void send(String str){
         try{
             byte[] bytes = str.getBytes();
             this.output.write(bytes);

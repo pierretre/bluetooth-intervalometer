@@ -14,10 +14,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.NoActionBar">
-        <service
-            android:name=".BluetoothCommunicationService"
-            android:exported="false"></service>
+        android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
         <service android:name=".BluetoothIntentService" />
 
         <activity android:name=".TimePickingActivity" />

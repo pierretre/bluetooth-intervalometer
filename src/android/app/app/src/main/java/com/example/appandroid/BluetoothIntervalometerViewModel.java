@@ -56,10 +56,31 @@ public class BluetoothIntervalometerViewModel {
     }
 
     public String getTotalTime(){
-        if(interval<=0 || picturesNumber<=0)
-            return "Not quite ready";
-        return "Total time of "
-                +String.valueOf(this.interval*this.picturesNumber+this.timerDelay)+" : "
-                +String.valueOf((this.interval*this.picturesNumber)/25)+" seconds of 25 FPS timelapse";
+        if(interval<=0)
+            return "You must set the interval";
+        if(picturesNumber<=0)
+            return "You must set the number of pictures";
+
+        int totalTime = this.interval*this.picturesNumber+this.timerDelay;
+
+        String time = "";
+
+        int seconds = totalTime % 60;
+        int minutes = (totalTime - seconds) / 60;
+        int hours = (minutes - (minutes % 60)) / 60;
+
+        if(String.valueOf(hours).length()<2)
+            time+="0";
+        time+=String.valueOf(hours)+":";
+        if(String.valueOf(minutes).length()<2)
+            time+="0";
+        time+=String.valueOf(minutes)+":";
+        if(String.valueOf(seconds).length()<2)
+            time+="0";
+        time+=String.valueOf(seconds);
+        float videoTime = ((float)this.interval*(float)this.picturesNumber)/(float)25;
+        return "Finished in "
+                +String.valueOf(time)+" : \r\n"
+                +String.valueOf(videoTime+" seconds of 25 FPS timelapse");
     }
 }

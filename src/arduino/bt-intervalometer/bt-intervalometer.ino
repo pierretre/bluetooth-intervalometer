@@ -21,7 +21,7 @@ void loop() {
   while (mySerial.available() == 0);
 
   String inputString = mySerial.readString();
-  Serial.print("Message received : "); Serial.println(inputString);
+  Serial.println("\r\n Message received : "); Serial.println(inputString);
 
   inputString.trim();
 
@@ -45,17 +45,17 @@ void loop() {
 
     if (interval <= 0) {
       //error message to tell him that he must fill in a positive number
-      mySerial.println("STATUS|WAITING|You must specify an interval of 1 sec at least");
+      Serial.println("STATUS|WAITING|You must specify an interval of 1 sec at least");
       OK_values = false;
     }
-    if (start_delay <= 0) {
+    if (start_delay < 0) {
       //error message to tell him that he must fill in a positive number
-      mySerial.println("STATUS|WAITING|You must specify a timer delay of 1 sec at least");
+      Serial.println("STATUS|WAITING|You must specify a timer delay of 1 sec at least");
       OK_values = false;
     }
     if (pics_number <= 0) {
       //error message to tell him that he can't take 0 or less pictures
-      mySerial.println("STATUS|WAITING|You must take at least on picture");
+      Serial.println("STATUS|WAITING|You must take at least on picture");
       OK_values = false;
     }
   }
@@ -67,20 +67,20 @@ void loop() {
     int hours = (minutes - (minutes % 60)) / 60;
 
     mySerial.println("STATUS|RUNNING|" + String(seconds) + ":" + String(pics_number));
-    Serial.print("STATUS|RUNNING|Take a photo every : " + String(interval)  + "s:Total number of pictures : " + String(pics_number) + ":Total time : " + String(hours) + "h" + String(minutes % 60) + "m" + String(s) + "s");
+    Serial.println("STATUS|RUNNING|Take a photo every : " + String(interval)  + "s:Total number of pictures : " + String(pics_number) + ":Total time : " + String(hours) + "h" + String(minutes % 60) + "m" + String(s) + "s \r\n");
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
     // take pictures while the number of pics taken does not exceed the number of pics filled in by the user
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    delay(start_delay);
+    delay(start_delay*1000);
 
     while (pics_number > 0) {
 
       if (mySerial.available() != 0) {
         String inString = mySerial.readString();
         inString.trim();
-        Serial.print("Message received : "); Serial.println(inString);
+        Serial.println("Message received while running : "); Serial.println(inString);
 
         if (inString == "STATUS")
           mySerial.write("STATUS|RUNNING\n");
@@ -101,5 +101,6 @@ void loop() {
       }
     }
     mySerial.println("STATUS|WAITING");
+    Serial.println("END of shooting");
   }
 }

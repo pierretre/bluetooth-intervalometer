@@ -18,7 +18,8 @@ public class TimePickingActivity extends AppCompatActivity {
     private NumberPicker seconds;
 
     private String type;
-    private int value;
+    private String startValue;
+    boolean backPressed = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +52,7 @@ public class TimePickingActivity extends AppCompatActivity {
             finish();
         }
         if(bundle.containsKey("value") && bundle.getString("value")!=null) {
+            this.startValue = bundle.getString("value");
             String [] hms = bundle.getString("value").split(":");
             try {
                 hours.setValue(Integer.parseInt(hms[0]));
@@ -75,15 +77,17 @@ public class TimePickingActivity extends AppCompatActivity {
         String value = "";
         if(String.valueOf(hours.getValue()).length()<2)
             value+="0";
-        value+=String.valueOf(hours.getValue())+":";
+        value+=hours.getValue()+":";
         if(String.valueOf(minutes.getValue()).length()<2)
             value+="0";
-        value+=String.valueOf(minutes.getValue())+":";
+        value+=minutes.getValue()+":";
         if(String.valueOf(seconds.getValue()).length()<2)
             value+="0";
         value+=String.valueOf(seconds.getValue());
 
         if(value.equals("00:00:00"))
+            value = "";
+        if(value.equals(this.startValue) || this.backPressed)
             setResult(RESULT_CANCELED);
         else{
             Intent intent = new Intent();
@@ -96,7 +100,13 @@ public class TimePickingActivity extends AppCompatActivity {
             }
             setResult(RESULT_OK, intent);
         }
-
         super.finish();
+    }
+
+    @Override
+    public void onBackPressed() {
+        this.backPressed = true;
+        finish();
+        super.onBackPressed();
     }
 }

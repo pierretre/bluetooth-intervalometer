@@ -79,12 +79,12 @@
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
 
             <EditText
-                android:id="@+id/interval"
+                android:id="@+id/intervalEdit"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1.5"
                 android:ems="0"
-                android:enabled="false"
+                android:focusable="false"
                 android:hint="none"
                 android:textAlignment="center" />
 
@@ -113,12 +113,12 @@
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
 
             <EditText
-                android:id="@+id/timer"
+                android:id="@+id/timerEdit"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1.5"
                 android:ems="0"
-                android:enabled="false"
+                android:focusable="false"
                 android:hint="none"
                 android:textAlignment="center" />
 

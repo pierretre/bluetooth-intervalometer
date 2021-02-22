@@ -31,12 +31,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button intervalBtn;
     private ImageButton pictureBtn;
 
-    private TextView status;
     private TextView state;
 
     private Intent bluetoothIntentService;
     private BluetoothIntentService myService;
-
     private BluetoothIntervalometerViewModel model;
 
     @Override
@@ -48,7 +46,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         this.model = new BluetoothIntervalometerViewModel();
 
-        bluetoothIntentService = new Intent(getApplicationContext(), BluetoothIntentService.class);
+        this.bluetoothIntentService = new Intent(getApplicationContext(), BluetoothIntentService.class);
 
         disconnect();
     }
@@ -64,9 +62,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         if(run==null)
                             Toast.makeText(getApplicationContext(), R.string.badValuesError, Toast.LENGTH_SHORT).show();
 
-                        Toast.makeText(getApplicationContext(), "RUN = "+run, Toast.LENGTH_SHORT).show();
                         Log.e("RUN", run);
-
                         myService.send(run);
                         intervalBtn.setText(R.string.stopBtn);
                     }else
@@ -84,31 +80,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     bindService(bluetoothIntentService, serviceConnection, Context.BIND_AUTO_CREATE);
 
                 }else if(String.valueOf(connectBtn.getText()).equals("disconnect")){
-//                    Toast.makeText(MainActivity.this, "disconnect", Toast.LENGTH_SHORT).show();
-
                     disconnect();
                 }
                 break;
 
             case R.id.pictureBtn:
-//                bluetoothComThread.send("TAKE_SINGLE_SHOT");
+                myService.send("TAKE_SINGLE_SHOT");
                 break;
 
+            case R.id.intervalEdit:
             case R.id.setIntervalBtn:
             case R.id.setIntervalLayout:
                 Intent interval = new Intent(getApplicationContext(), TimePickingActivity.class);
                 interval.putExtra("request", "interval");
-                EditText et = findViewById(R.id.interval);
+                EditText et = findViewById(R.id.intervalEdit);
                 if(et.getText()!=null)
                     interval.putExtra("value", et.getText().toString());
                 startActivityForResult(interval, 1);
                 break;
 
             case R.id.setTimerBtn:
+            case R.id.timerEdit:
             case R.id.setTimerLayout:
                 Intent timer = new Intent(getApplicationContext(), TimePickingActivity.class);
                 timer.putExtra("request", "timer");
-                EditText ett = findViewById(R.id.timer);
+                EditText ett = findViewById(R.id.timerEdit);
                 if(ett.getText()!=null)
                     timer.putExtra("value", ett.getText().toString());
                 startActivityForResult(timer, 1);
@@ -149,16 +145,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if(resultCode!=RESULT_CANCELED){
             if(data.hasExtra("interval")) {
                 String val = data.getExtras().getString("interval");
-                EditText et = findViewById(R.id.interval);
+                EditText et = findViewById(R.id.intervalEdit);
                 et.setText(null);
-                if(!val.equals("00:00:00"))
+//                if(!val.equals("00:00:00"))
+                if(!val.equals(""))
                     et.setText(val);
                 model.setInterval(val);
             }else if(data.hasExtra("timer")) {
                 String val = data.getExtras().getString("timer");
-                EditText et = findViewById(R.id.timer);
+                EditText et = findViewById(R.id.timerEdit);
                 et.setText(null);
-                if(!val.equals("00:00:00"))
+//                if(!val.equals("00:00:00"))
+                if(!val.equals(""))
                     et.setText(val);
                 model.setTimerDelay(val);
             }
@@ -211,7 +209,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
 
         state = findViewById(R.id.state);
-//        status = findViewById(R.id.status);
 
         intervalBtn = findViewById(R.id.intervalBtn);
         intervalBtn.setOnClickListener(this);
@@ -222,6 +219,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         pictureBtn = findViewById(R.id.pictureBtn);
         pictureBtn.setOnClickListener(this);
+
+        EditText timerEdit = findViewById(R.id.timerEdit);
+        timerEdit.setOnClickListener(this);
+
+        EditText intervalEdit = findViewById(R.id.intervalEdit);
+        intervalEdit.setOnClickListener(this);
 
         Button setIntervalBtn = findViewById(R.id.setIntervalBtn);
         LinearLayout setIntervalLayout = findViewById(R.id.setIntervalLayout);
@@ -236,7 +239,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void updateIndicatorMessage(){
         TextView time = findViewById(R.id.totalTime);
-        time.setText(model.getTotalTime());
+        if(myService==null)
+            time.setText(model.getTotalTime()+"\r\n(You must connect to device)");
+        else
+            time.setText(model.getTotalTime());
     }
 
     @Override

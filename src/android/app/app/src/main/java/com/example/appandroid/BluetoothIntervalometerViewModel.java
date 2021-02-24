@@ -27,7 +27,8 @@ public class BluetoothIntervalometerViewModel {
         String [] hms = str.split(":");
         int ret=0;
         try {
-            ret+=Integer.parseInt(hms[2])+Integer.parseInt(hms[1])*60+Integer.parseInt(hms[0])*3600;
+            if(!str.equals(""))
+                ret+=Integer.parseInt(hms[2])+Integer.parseInt(hms[1])*60+Integer.parseInt(hms[0])*3600;
         } catch(NumberFormatException nfe) {
             return;
         }

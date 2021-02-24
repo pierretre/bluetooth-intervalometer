@@ -26,6 +26,8 @@
     <string name="disconnectBtn">disconnect</string>
     <string name="startBtn">start</string>
     <string name="stopBtn">stop</string>
+    <string name="okBtn">ok</string>
+    <string name="resetBtn">reset</string>
 
     <!--    states for the bluetooth connection-->
     <string name="discoveringState">DISCOVERING</string>

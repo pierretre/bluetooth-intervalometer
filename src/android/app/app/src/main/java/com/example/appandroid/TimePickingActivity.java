@@ -18,8 +18,7 @@ public class TimePickingActivity extends AppCompatActivity {
     private NumberPicker seconds;
 
     private String type;
-    private String startValue;
-    boolean backPressed = false;
+    private String value;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +39,8 @@ public class TimePickingActivity extends AppCompatActivity {
         seconds.setMaxValue(59);
         seconds.setMinValue(0);
 
+        String startValue=null;
+
         if(bundle.containsKey("request") && bundle.getString("request")!=null){
             type=bundle.getString("request");
             if(type.equals("interval"))
@@ -52,7 +53,7 @@ public class TimePickingActivity extends AppCompatActivity {
             finish();
         }
         if(bundle.containsKey("value") && bundle.getString("value")!=null) {
-            this.startValue = bundle.getString("value");
+            startValue = bundle.getString("value");
             String [] hms = bundle.getString("value").split(":");
             try {
                 hours.setValue(Integer.parseInt(hms[0]));
@@ -64,30 +65,36 @@ public class TimePickingActivity extends AppCompatActivity {
         }
 
         Button ok = findViewById(R.id.okBtn);
-        ok.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
+        String finalStartValue = startValue;
+        ok.setOnClickListener(view -> {
+            String hms = "";
+            if(String.valueOf(hours.getValue()).length()<2)
+                hms+="0";
+            hms+=hours.getValue()+":";
+            if(String.valueOf(minutes.getValue()).length()<2)
+                hms+="0";
+            hms+=minutes.getValue()+":";
+            if(String.valueOf(seconds.getValue()).length()<2)
+                hms+="0";
+            hms+=String.valueOf(seconds.getValue());
+
+            if(!finalStartValue.equals(hms))
+                value = hms;
+            finish();
+        });
+
+        Button reset = findViewById(R.id.resetBtn);
+        reset.setOnClickListener(view -> {
+            hours.setValue(0);
+            minutes.setValue(0);
+            seconds.setValue(0);
         });
     }
 
     @Override
     public void finish() {
-        String value = "";
-        if(String.valueOf(hours.getValue()).length()<2)
-            value+="0";
-        value+=hours.getValue()+":";
-        if(String.valueOf(minutes.getValue()).length()<2)
-            value+="0";
-        value+=minutes.getValue()+":";
-        if(String.valueOf(seconds.getValue()).length()<2)
-            value+="0";
-        value+=String.valueOf(seconds.getValue());
 
-        if(value.equals("00:00:00"))
-            value = "";
-        if(value.equals(this.startValue) || this.backPressed)
+        if(value==null)
             setResult(RESULT_CANCELED);
         else{
             Intent intent = new Intent();
@@ -101,12 +108,5 @@ public class TimePickingActivity extends AppCompatActivity {
             setResult(RESULT_OK, intent);
         }
         super.finish();
-    }
-
-    @Override
-    public void onBackPressed() {
-        this.backPressed = true;
-        finish();
-        super.onBackPressed();
     }
 }

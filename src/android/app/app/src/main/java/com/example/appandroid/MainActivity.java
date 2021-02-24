@@ -147,16 +147,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 String val = data.getExtras().getString("interval");
                 EditText et = findViewById(R.id.intervalEdit);
                 et.setText(null);
-//                if(!val.equals("00:00:00"))
-                if(!val.equals(""))
+                if(!val.equals("00:00:00"))
                     et.setText(val);
                 model.setInterval(val);
             }else if(data.hasExtra("timer")) {
                 String val = data.getExtras().getString("timer");
                 EditText et = findViewById(R.id.timerEdit);
                 et.setText(null);
-//                if(!val.equals("00:00:00"))
-                if(!val.equals(""))
+                if(!val.equals("00:00:00"))
                     et.setText(val);
                 model.setTimerDelay(val);
             }

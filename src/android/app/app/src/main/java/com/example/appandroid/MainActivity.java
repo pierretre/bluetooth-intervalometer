@@ -57,16 +57,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch(view.getId()){
             case R.id.intervalBtn:
                 if(String.valueOf(intervalBtn.getText()).equals("start")) {
-                    if(myService!=null){
-                        String run = this.model.getRunCommand(); //returns null if the values aren't right
-                        if(run==null)
-                            Toast.makeText(getApplicationContext(), R.string.badValuesError, Toast.LENGTH_SHORT).show();
-
+                    String run = null;
+                    if(myService == null)
+                        Toast.makeText(getApplicationContext(), R.string.notConnectedError, Toast.LENGTH_SHORT).show();
+                    else if((run = this.model.getRunCommand()) != null){
                         Log.e("RUN", run);
                         myService.send(run);
                         intervalBtn.setText(R.string.stopBtn);
                     }else
-                        Toast.makeText(getApplicationContext(), R.string.notConnectedError, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), R.string.badValuesError, Toast.LENGTH_SHORT).show();
+
                 }else if(String.valueOf(intervalBtn.getText()).equals("stop")){
                     myService.send("STOP");
                     intervalBtn.setText(R.string.startBtn);
@@ -185,6 +185,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         connectBtn.setText(R.string.connectBtn);
         state.setText(R.string.disconnectedState);
         state.setTextColor(getResources().getColor(R.color.disconnected));
+
+        updateIndicatorMessage();
     }
 
     private void initUI(){
@@ -244,52 +246,53 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
-    public void updateUi(String action) {
+    public void updateUi(int action) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 switch (action){
-                    case "DISCOVERING":
+                    case R.integer.DISCOVERING:
                         connectBtn.setEnabled(false);
                         state.setText(R.string.discoveringState);
                         state.setTextColor(getResources().getColor(R.color.pairing));
                         break;
 
-                    case "PAIRING":
+                    case R.integer.PAIRING:
                         state.setText(R.string.pairingState);
                         state.setTextColor(getResources().getColor(R.color.pairing));
                         break;
 
-                    case "CONNECTING":
+                    case R.integer.CONNECTING:
                         connectBtn.setEnabled(false);
                         state.setText(R.string.connectingState);
                         state.setTextColor(getResources().getColor(R.color.connecting));
                         break;
 
-                    case "DISCONNECTED":
+                    case R.integer.DISCONNECTED:
                         disconnect();
                         break;
 
-                    case "CONNECTED":
+                    case R.integer.CONNECTED:
                         intervalBtn.setEnabled(true);
                         pictureBtn.setEnabled(true);
                         connectBtn.setEnabled(true);
                         connectBtn.setText(R.string.disconnectBtn);
                         state.setText(R.string.connectedState);
                         state.setTextColor(getResources().getColor(R.color.connected));
+                        updateIndicatorMessage();
                         break;
 
-                    case "DISCOVERING_ERROR":
+                    case R.integer.DISCOVERING_ERROR:
                         Toast.makeText(getApplicationContext(), R.string.discoverError, Toast.LENGTH_SHORT).show();
                         disconnect();
                         break;
 
-                    case "PAIRING_ERROR":
+                    case R.integer.PAIRING_ERROR:
                         Toast.makeText(getApplicationContext(), R.string.pairError, Toast.LENGTH_SHORT).show();
                         disconnect();
                         break;
 
-                    case "CONNECTING_ERROR":
+                    case R.integer.CONNECTING_ERROR:
                         Toast.makeText(getApplicationContext(), R.string.connectError, Toast.LENGTH_SHORT).show();
                         disconnect();
                         break;

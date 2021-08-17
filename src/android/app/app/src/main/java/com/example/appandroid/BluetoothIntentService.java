@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
+import java.time.chrono.HijrahChronology;
 import java.util.Set;
 import java.util.UUID;
 
@@ -33,9 +34,6 @@ import java.util.UUID;
  */
 public class BluetoothIntentService extends IntentService {
 
-//    private ResultReceiver receiver;
-
-    private boolean isPairing;
     private boolean isDiscovering;
 
     private BluetoothAdapter btAdapter;
@@ -92,6 +90,7 @@ public class BluetoothIntentService extends IntentService {
     public void onDestroy() {
         Log.e("SERVICE", "onDestroy");
         super.onDestroy();
+        unregisterReceiver(connectionStatusReceiver);
         try{
             if(this.btSocket!=null && this.btSocket.isConnected())
                  this.btSocket.close();
@@ -100,77 +99,50 @@ public class BluetoothIntentService extends IntentService {
         }
     }
 
-    private void pair(){
-        Log.e("SERVICE", "pair");
-        this.activity.updateUi("DISCOVERING");
-
-        isDiscovering=true;
-        this.btAdapter.startDiscovery();
+    public void connect(){
+        Set<BluetoothDevice> pairedDevices = this.btAdapter.getBondedDevices();
+        if (pairedDevices.size() != 0){
+            for (BluetoothDevice device : pairedDevices) {
+                if(device.getName().equals("HC-05"))
+                    this.hc05_device=device;
+            }
+        }
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(BluetoothDevice.ACTION_FOUND);
-        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-        registerReceiver(discoverReceiver, filter);
+        filter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
+        filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+        filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
+        registerReceiver(connectionStatusReceiver, filter);
 
-        while(isDiscovering){
-            Log.e("BT discover", String.valueOf(isDiscovering));
+        if(this.hc05_device==null) {
+            isDiscovering = true;
+            this.activity.updateUi(R.integer.DISCOVERING);
+            this.btAdapter.startDiscovery();
+
+        }else{
+            this.activity.updateUi(R.integer.CONNECTING);
+
+            setupBtConnection();
         }
-
-        if(this.hc05_device!=null){
-            this.activity.updateUi("PAIRING");
-            unregisterReceiver(discoverReceiver);
-            isPairing=true;
-            IntentFilter intent = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
-            registerReceiver(pairReceiver, intent);
-            try {
-                Method method = this.hc05_device.getClass().getMethod("createBond", (Class[]) null);
-                method.invoke(this.hc05_device, (Object[]) null);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            while(isPairing){
-                Log.e("BT pairing", String.valueOf(isPairing));
-            }
-            unregisterReceiver(pairReceiver);
-            Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
-
-            if (pairedDevices.size() != 0){
-                for (BluetoothDevice device : pairedDevices) {
-                    if(device.getName().equals("HC-05")){
-                        this.connect();
-                        return;
-                    }
-                }
-            }
-        }
-        Log.e("BT pair thread", "end of pairing process");
     }
 
-    public void connect(){
-        if(this.hc05_device==null)
-            this.pair();
-        else{
-            this.btAdapter.cancelDiscovery();
-            this.activity.updateUi("CONNECTING");
+    private void setupBtConnection(){
+        try {
+            btSocket = hc05_device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"));
+            btSocket.connect();
+            input = btSocket.getInputStream();
+            output = btSocket.getOutputStream();
 
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
             try {
-                UUID uuid = this.hc05_device.getUuids()[0].getUuid();
-                this.btSocket = this.hc05_device.createRfcommSocketToServiceRecord(uuid);
-                this.btSocket.connect();
-                this.input = this.btSocket.getInputStream();
-                this.output = this.btSocket.getOutputStream();
-                this.activity.updateUi("CONNECTED");
-
-            } catch (IOException ioe) {
-                ioe.printStackTrace();
-                try {
-                    this.btSocket.close();
-                } catch (IOException ioe2) {
-                    ioe2.printStackTrace();
-                }
-                this.activity.updateUi("CONNECTING_ERROR");
+                btSocket.close();
+            } catch (IOException ioe2) {
+                ioe2.printStackTrace();
             }
+            activity.updateUi(R.integer.CONNECTING_ERROR);
         }
     }
 
@@ -237,50 +209,71 @@ public class BluetoothIntentService extends IntentService {
     }
 
     public interface Callbacks{
-        public void updateUi(String state);
+        public void updateUi(int state);
     }
 
-    private final BroadcastReceiver discoverReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver connectionStatusReceiver = new BroadcastReceiver() {
+        @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
-                Log.e("BT discover", "start discovery");
-            } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                Log.e("BT discover", "end discovery");
-                isDiscovering=false;
-                if(hc05_device==null)
-                    activity.updateUi("DISCOVERING_ERROR");
-            } else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                BluetoothDevice bt_device = (BluetoothDevice) intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+
+            final int state = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.ERROR);
+            BluetoothDevice bt_device = (BluetoothDevice) intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+
+            if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
+                Log.e("BT STATUS RECEIVER", "action bond changed");
+                final int prevState    = intent.getIntExtra(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE, BluetoothDevice.ERROR);
+                if (state == BluetoothDevice.BOND_BONDED && prevState == BluetoothDevice.BOND_BONDING) {
+                    Log.e("BT pair", "Paired");
+                } else if (state == BluetoothDevice.BOND_NONE && prevState == BluetoothDevice.BOND_BONDED){
+                    Log.e("BT pair", "Unpaired");
+                }else if (state == BluetoothDevice.BOND_NONE && prevState == BluetoothDevice.BOND_BONDING){
+                    Log.e("BT pair", "Not paired");
+                    activity.updateUi(R.integer.PAIRING_ERROR);
+                }
+            }
+            else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+                //Device found
+                Log.e("BT STATUS RECEIVER", "device found");
+
                 assert bt_device != null;
-                Log.e("BT device  :", "found : "+bt_device.getName()+" / "+bt_device.getAddress()+" / "+(bt_device.getName()!=null && bt_device.getName().equals("HC-05")));
                 if(bt_device.getName()!=null && bt_device.getName().equals("HC-05")){
                     hc05_device = bt_device;
                     btAdapter.cancelDiscovery();
                 }
             }
-        }
-    };
+            else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action) && isDiscovering) {
+                //Done searching
+                Log.e("BT STATUS RECEIVER", "done searching");
+                 if(hc05_device==null)
+                    activity.updateUi(R.integer.DISCOVERING_ERROR);
+                 else{
+                     activity.updateUi(R.integer.PAIRING);
+                     try {
+                         Method method = hc05_device.getClass().getMethod("createBond", (Class[]) null);
+                         method.invoke(hc05_device, (Object[]) null);
+                     } catch (Exception e) {
+                         e.printStackTrace();
+                     }
+                     isDiscovering = false;
+                 }
+            }
+            else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
+                //Device is now connected
+                Log.e("BT STATUS RECEIVER", "now connected to "+bt_device.getName());
 
-    private final BroadcastReceiver pairReceiver = new BroadcastReceiver() {
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            Log.e("BT pair", "onReceive");
-            if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
-                final int state        = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.ERROR);
-                final int prevState    = intent.getIntExtra(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE, BluetoothDevice.ERROR);
-                Log.e("BT pair", "ACTION_BOND_STATE_CHANGED");
-                if (state == BluetoothDevice.BOND_BONDED && prevState == BluetoothDevice.BOND_BONDING) {
-                    Log.e("BT pair", "Paired");
-                    isPairing=false;
-                } else if (state == BluetoothDevice.BOND_NONE && prevState == BluetoothDevice.BOND_BONDED){
-                    Log.e("BT pair", "Unpaired");
-                }else if (state == BluetoothDevice.BOND_NONE && prevState == BluetoothDevice.BOND_BONDING){
-                    Log.e("BT pair", "Not paired");
-                    isPairing=false;
-                    activity.updateUi("PAIRING_ERROR");
+                if(btSocket == null) {
+                    setupBtConnection();
                 }
+                activity.updateUi(R.integer.CONNECTED);
+            }
+            else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action) && btSocket != null) {
+                //Device has disconnected
+                Log.e("BT STATUS RECEIVER", "disconnected");
+                activity.updateUi(R.integer.DISCONNECTED);
             }
         }
     };
+
+//    public synchronized void
 }

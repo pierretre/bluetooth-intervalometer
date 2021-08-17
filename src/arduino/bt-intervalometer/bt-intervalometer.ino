@@ -2,7 +2,7 @@
 
 SoftwareSerial mySerial(6, 5); // RX, TX for Bluetooth
 int interval, start_delay, pics_number;
-int CAMERA = 2;
+const int CAMERA = 2;
 
 void setup() {
   pinMode(CAMERA, OUTPUT);
@@ -73,34 +73,36 @@ void loop() {
     // take pictures while the number of pics taken does not exceed the number of pics filled in by the user
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    delay(start_delay*1000);
+    if (start_delay > 0)
+      delay(start_delay * 1000);
 
-    while (pics_number > 0) {
-
-      if (mySerial.available() != 0) {
-        String inString = mySerial.readString();
-        inString.trim();
-        Serial.println("Message received while running : "); Serial.println(inString);
-
-        if (inString == "STATUS")
-          mySerial.write("STATUS|RUNNING\n");
-        else if (inString == "STOP")
-          pics_number = 0;
-
-      }
-      if (pics_number > 0) {
-        digitalWrite(2, LOW);
-        delay(250);
-        digitalWrite(2, HIGH);
-        delay(interval * 1000 - 250);
-
-        Serial.print("i");
-        pics_number--;
-
-        mySerial.println("STATUS|RUNNING|" + String(interval * pics_number) + ":" + String(pics_number));
-      }
-    }
+    takePictures(0);
     mySerial.println("STATUS|WAITING");
     Serial.println("END of shooting");
+  }
+}
+
+void takePictures(int taken_pics) {
+
+  if (mySerial.available() != 0) {
+    String inString = mySerial.readString();
+    inString.trim();
+    Serial.println("Message received while running : "); Serial.println(inString);
+
+    if (inString == "STOP")
+      return;
+  }
+
+  if (taken_pics < pics_number ) {
+    digitalWrite(2, LOW);
+    delay(250);
+    digitalWrite(2, HIGH);
+    delay(interval * 1000 - 250);
+
+    taken_pics++;
+    
+    mySerial.println("STATUS|RUNNING|" + String(interval * pics_number) + ":" + String(pics_number - taken_pics) + ":" + String(taken_pics));
+    
+    takePictures(taken_pics);
   }
 }

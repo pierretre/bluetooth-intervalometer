@@ -36,7 +36,9 @@ public class BluetoothIntervalometerViewModel {
     }
 
     public void setPicturesNumber(String nb){
-        if(nb!=null && !nb.equals(""))
+        if(nb.equals(""))
+            this.picturesNumber = 0;
+        else if(nb!=null)
             this.picturesNumber = Integer.parseInt(nb);
     }
 
@@ -79,7 +81,7 @@ public class BluetoothIntervalometerViewModel {
         if(String.valueOf(seconds).length()<2)
             time+="0";
         time+=String.valueOf(seconds);
-        float videoTime = ((float)this.interval*(float)this.picturesNumber)/(float)25;
+        float videoTime = ((float)this.picturesNumber)/(float)25;
         return "Finished in "
                 +String.valueOf(time)+" : \r\n"
                 +String.valueOf(videoTime+" seconds of 25 FPS timelapse");

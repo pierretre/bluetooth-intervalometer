@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="DISCOVERING">0</integer>
+    <integer name="PAIRING">1</integer>
+    <integer name="CONNECTING">2</integer>
+    <integer name="DISCONNECTED">3</integer>
+    <integer name="CONNECTED">4</integer>
+    <integer name="DISCOVERING_ERROR">5</integer>
+    <integer name="PAIRING_ERROR">6</integer>
+    <integer name="CONNECTING_ERROR">7</integer>
+</resources>

@@ -178,6 +178,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             unbindService(serviceConnection);
         stopService(bluetoothIntentService);
 
+        myService = null;
+
         intervalBtn.setEnabled(false);
         pictureBtn.setEnabled(false);
         connectBtn.setEnabled(true);
@@ -250,7 +252,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                switch (action){
+                switch (action) {
                     case R.integer.DISCOVERING:
                         connectBtn.setEnabled(false);
                         state.setText(R.string.discoveringState);
@@ -297,7 +299,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         disconnect();
                         break;
 
-                    default: break;
+                    default:
+                        break;
                 }
             }
         });

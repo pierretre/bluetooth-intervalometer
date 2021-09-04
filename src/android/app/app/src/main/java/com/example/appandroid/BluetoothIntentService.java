@@ -100,6 +100,9 @@ public class BluetoothIntentService extends IntentService {
     }
 
     public void connect(){
+
+        //TODO check bluetooth is enabled on device before doing anything else
+
         Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
         if (pairedDevices.size() != 0){
             for (BluetoothDevice device : pairedDevices) {
@@ -117,13 +120,16 @@ public class BluetoothIntentService extends IntentService {
         registerReceiver(connectionStatusReceiver, filter);
 
         if(hc05_device==null) {
+
+            Log.e("SERVICE","connect : no device found, starting discovering process ");
+
             isDiscovering = true;
             activity.updateUi(R.integer.DISCOVERING);
             btAdapter.startDiscovery();
 
         }else{
+            Log.e("SERVICE","connect : device found, starting connection ");
             activity.updateUi(R.integer.CONNECTING);
-
             setupBtConnection();
         }
     }
@@ -140,7 +146,6 @@ public class BluetoothIntentService extends IntentService {
             readFeedbackFromDevice();
 
         } catch (IOException ioe) {
-            Log.e("setupBtConnection", "catch");
             ioe.printStackTrace();
             try {
                 btSocket.close();

@@ -4,6 +4,7 @@
     <string name="interval">interval</string>
     <string name="nbpictures">number of pictures</string>
     <string name="delay">timer delay</string>
+    <string name="bulb_shutter">bulb mode shutter speed (seconds)</string>
 
     <string name="intervalMessage">Take a picture every :</string>
     <string name="timerMessage">Take the first picture after :</string>
@@ -16,11 +17,12 @@
     <string name="hours">h</string>
 
     <!--    bluetooth connection error messages -->
-    <string name="connectError">Cannot connect to the device, please try again</string>
+    <string name="connectError">Cannot connect to the device, make sure it is in range and try again</string>
     <string name="badValuesError">You must set an interval value and take at least one picture</string>
     <string name="notConnectedError">You must connect to the device before starting shooting photos</string>
     <string name="pairError">Cannot pair to the device : make sure you allow pairing</string>
     <string name="discoverError">Cannot find the device : make sure it is powered</string>
+    <string name="bluetoothEnableError">You must enable bluetooth on your phone</string>
 
     <string name="connectBtn">connect</string>
     <string name="disconnectBtn">disconnect</string>
@@ -32,7 +34,7 @@
     <!--    states for the bluetooth connection-->
     <string name="discoveringState">DISCOVERING</string>
     <string name="pairingState">PAIRING</string>
-    <string name="connectingState">CONNECTING</string>
+    <string name="connectingState">LOOKING FOR DEVICE</string>
     <string name="connectedState">CONNECTED</string>
     <string name="disconnectedState">DISCONNECTED</string>
 

@@ -1,7 +1,8 @@
 #include <SoftwareSerial.h>
 
 SoftwareSerial mySerial(6, 5); // RX, TX for Bluetooth
-int interval, start_delay, pics_number, bulb_shutter_speed;
+int interval, start_delay, pics_number, shutter_speed;
+bool bulb_mode;
 const int CAMERA = 2, MILLISECS = 1000;
 
 void setup() {
@@ -14,9 +15,6 @@ void setup() {
 
 void loop() {
   boolean OK_values = false;
-  //interval = 0;
-  //start_delay = 0;
-  //pics_number = 0;
 
   while (mySerial.available() == 0);
 
@@ -26,13 +24,13 @@ void loop() {
   inputString.trim();
 
   if (inputString == "STATUS") {
-    mySerial.write("STATUS|WAITING\n");
+    mySerial.write("WAITING\n");
   } else if (inputString == "TAKE_SINGLE_SHOT") {
     // take a single picture
 
     Serial.println("take single shot ");
     digitalWrite(CAMERA, LOW);
-    delay(bulb_shutter_speed);
+    delay(shutter_speed);
     digitalWrite(CAMERA, HIGH);
 
   } else if (inputString.substring(0, 3) == "RUN") {
@@ -40,9 +38,12 @@ void loop() {
     interval = inputString.substring(4, 9).toInt();
     start_delay = inputString.substring(10, 15).toInt();
     pics_number = inputString.substring(16, 20).toInt();
-    bulb_shutter_speed = inputString.substring(21, 26).toInt();
+    bulb_mode = inputString.substring(21, 22).toInt();
 
-    if (bulb_shutter_speed == 0) bulb_shutter_speed = 250;
+    if (bulb_mode)
+      shutter_speed = inputString.substring(22, 27).toInt();
+    else
+      shutter_speed = 250;
 
     OK_values = true;
 
@@ -66,14 +67,9 @@ void loop() {
     int minutes = (seconds - s) / 60;
     int hours = (minutes - (minutes % 60)) / 60;
 
-    mySerial.println("STATUS|RUNNING|" + String(seconds) + ":" + String(pics_number));
-    Serial.println("STATUS|RUNNING|Take a photo every : " + String(interval)  + "s:Total number of pictures : " + String(pics_number) + ":Total time : " + String(hours) + "h" + String(minutes % 60) + "m" + String(s)
-                   + "s AND bulb_shutter_speed = " + String(bulb_shutter_speed) + "ms\r\n");
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // take pictures while the number of pics taken does not exceed the number of pics filled in by the user
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+    mySerial.println("RUNNING|" + String(seconds) + ":" + String(pics_number));
+    Serial.println("RUNNING|Take a photo every : " + String(interval)  + "s:Total number of pictures : " + String(pics_number) + ":Total time : " + String(hours) + "h" + String(minutes % 60) + "m" + String(s)
+                   + "s AND shutter_speed = " + String(shutter_speed) + "ms\r\n");
 
     for (int i = 0; i < start_delay; i++) {
 
@@ -88,14 +84,21 @@ void loop() {
           return;
       }
     }
-    
+
     takePictures(0);
-    mySerial.println("STATUS|WAITING");
+    mySerial.println("STOP\n");
+    mySerial.println("WAITING\n");
     Serial.println("END of shooting");
   }
 }
 
+/**
+   function that calls recursively ta take one picture at a time
+   takes the number of pictures already taken in parameters
+*/
 void takePictures(int taken_pics) {
+
+  mySerial.println("RUNNING|" + String(interval * remaining_pics) + ":" + String(remaining_pics) + ":" + String(taken_pics));
 
   if (mySerial.available() != 0) {
     String inString = mySerial.readString();
@@ -107,16 +110,34 @@ void takePictures(int taken_pics) {
   }
 
   if (taken_pics < pics_number ) {
-    digitalWrite(2, LOW);
-    delay(bulb_shutter_speed);
-    digitalWrite(2, HIGH);
-    delay(interval * MILLISECS - bulb_shutter_speed);
+    digitalWrite(CAMERA, LOW);
+
+    if (bulb_mode && shutter_speed > 5) {
+
+      for (int i = 0; i < shutter_speed; i++) {
+
+        delay(MILLISECS);
+
+        if (mySerial.available() != 0) {
+          String inString = mySerial.readString();
+          inString.trim();
+          Serial.println("Message received while running : "); Serial.println(inString);
+
+          if (inString == "STOP") {
+            digitalWrite(CAMERA, HIGH); // stop the photo
+            return;
+          }
+        }
+      }
+    } else
+      delay(shutter_speed);
+
+    digitalWrite(CAMERA, HIGH);
+    delay(interval * MILLISECS - shutter_speed);
 
     taken_pics++;
 
     int remaining_pics = pics_number - taken_pics;
-
-    mySerial.println("STATUS|RUNNING|" + String(interval * remaining_pics) + ":" + String(remaining_pics) + ":" + String(taken_pics));
 
     takePictures(taken_pics);
   }

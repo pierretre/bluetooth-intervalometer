@@ -224,6 +224,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         spinner.setVisibility(View.GONE);
     }
 
+    /**
+     * private method that inits the ui elements when the app starts
+     */
     private void initUI(){
         Toolbar toolbar = findViewById(R.id.my_toolbar);
         setSupportActionBar(toolbar);
@@ -261,8 +264,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         timerField = findViewById(R.id.timerEdit);
         timerField.setOnClickListener(this);
 
-        intervalField = findViewById(R.id.timerEdit);
-        timerField.setOnClickListener(this);
+        intervalField = findViewById(R.id.intervalEdit);
+        intervalField.setOnClickListener(this);
 
         bulbShutterField = findViewById(R.id.bulbShutterEdit);
         bulbShutterField.setEnabled(false);
@@ -296,6 +299,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setTimerLayout.setOnClickListener(this);
     }
 
+    /**
+     * method that updates the indicator message under the fields to tell the user what the settings he set will result in
+     */
     private void updateIndicatorMessage(){
         TextView time = findViewById(R.id.totalTime);
         if(myService==null)
@@ -304,6 +310,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             time.setText(model.getTotalTime());
     }
 
+    /**
+     * method used by the bluetooth intent service to update ui elements when the bluetooth state changes
+     * @param action an int corresponding to a certain bluetooth state to display
+     */
     @Override
     public void updateUi(int action) {
         runOnUiThread(new Runnable() {

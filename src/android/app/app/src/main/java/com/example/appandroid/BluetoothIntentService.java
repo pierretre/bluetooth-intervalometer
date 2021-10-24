@@ -139,7 +139,7 @@ public class BluetoothIntentService extends IntentService {
      */
     private void setupBtConnection(){
         try {
-            btSocket = hc05_device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"));
+            btSocket = hc05_device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")); // UUID set in clear for the moment, can be retrieved dynamically
             btSocket.connect();
 
             input = btSocket.getInputStream();
@@ -147,6 +147,7 @@ public class BluetoothIntentService extends IntentService {
 
             activity.updateUi(R.integer.CONNECTED);
             Log.e("setupBtConnection", "socket connected ");
+            send("STATUS"); // send a satus request to check if the device is taking pictures or is waiting for an input from the user
             readFeedbackFromDevice();
 
         } catch (IOException ioe) {
@@ -184,7 +185,8 @@ public class BluetoothIntentService extends IntentService {
     }
 
     public interface Callbacks{
-        public void updateUi(int state);
+        void updatePhotoshootProgress(int remaining_time, int remaining_pics, int taken_pics);
+        void updateUi(int state);
     }
 
     private final BroadcastReceiver connectionStatusReceiver = new BroadcastReceiver() {
@@ -243,42 +245,28 @@ public class BluetoothIntentService extends IntentService {
      * method that receives the feedback messages from the arduino device
      */
     private void readFeedbackFromDevice(){
+        BufferedReader bf = new BufferedReader(new InputStreamReader(input));
+        String line;
+        String[] inputString;
+
         while(btSocket.isConnected()) {
             try {
-                BufferedReader bf = new BufferedReader(new InputStreamReader(input));
-                String line = null;
                 if((line = bf.readLine()) != null){
+                    inputString = line.split(":");
 
-                    Log.e("line",line);
-
-                    String [] inputString = line.split("|");
                     if (inputString[0].equals("RUNNING")) {
-                        // Sets the state of the app to running
-                        // if message[2]!=null:
-                        // OK : prints the message (message[2]) coming from arduino
-
-                        if (inputString[2] != null){
-                            Log.e("STATUS = RUNNING ", inputString[2]);
-
-                            //String[] message = inputString[2].split(":");
-
-                            // get information here about the current status of the intervalometer :
-                            // can get the number of pictures and the time remaining before the timelapse stops
-                        }else
-                            Log.e("STATUS = RUNNING ", "no message");
+                        activity.updateUi(R.integer.BL_DEVICE_RUNNING);
+                        if(inputString.length >= 4){
+                            try {
+                                activity.updatePhotoshootProgress(Integer.parseInt(inputString[1].trim()), Integer.parseInt(inputString[2].trim()), Integer.parseInt(inputString[3].trim()));
+                            } catch (NumberFormatException nfe) {
+                            }
+                        }
                     }else if (inputString[0].equals("WAITING")) {
-                        // Sets the state of the app to waiting
-                        // if message[2]!=null:
-                        // ERROR : prints the error message (message[2]) coming from arduino
-
-                        if (inputString[2] != null)
-                            Log.e("STATUS = WAITING ", inputString[2]);
-                        else
-                            Log.e("STATUS = WAITING ", "no error");
+                        activity.updateUi(R.integer.BL_DEVICE_WAITING);
                     }
                 }
             } catch (IOException ioe) {
-                ioe.printStackTrace();
                 try{
                     btSocket.close();
                 }catch (IOException ioe2){

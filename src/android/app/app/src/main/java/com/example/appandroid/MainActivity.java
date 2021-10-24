@@ -29,7 +29,7 @@ import java.util.Objects;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, BluetoothIntentService.Callbacks {
 
     private Button connectBtn;
-    private Button intervalBtn;
+    private Button startStopBtn;
     private ImageButton pictureBtn;
     private TextView bulbShutterText ;
     private EditText bulbShutterField;
@@ -37,8 +37,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private EditText intervalField;
     private EditText timerField;
     private ProgressBar spinner;
-
-    private TextView state;
+    private TextView blDeviceProgressIndicator;
+    private TextView blDeviceState;
 
     private Intent bluetoothIntentService;
     private BluetoothIntentService myService;
@@ -62,21 +62,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View view) {
         switch(view.getId()){
-            case R.id.intervalBtn:
-                if(String.valueOf(intervalBtn.getText()).equals("start")) {
+            case R.id.startStopBtn:
+                if(String.valueOf(startStopBtn.getText()).equals("start")) {
                     String run = null;
                     if(myService == null)
                         Toast.makeText(getApplicationContext(), R.string.notConnectedError, Toast.LENGTH_SHORT).show();
                     else if((run = this.model.getRunCommand()) != null){
                         Log.e("RUN", run);
                         myService.send(run);
-                        intervalBtn.setText(R.string.stopBtn);
+//                       startStopBtn.setText(R.string.stopBtn);
                     }else
                         Toast.makeText(getApplicationContext(), R.string.badValuesError, Toast.LENGTH_SHORT).show();
 
-                }else if(String.valueOf(intervalBtn.getText()).equals("stop")){
+                }else if(String.valueOf(startStopBtn.getText()).equals("stop")){
                     myService.send("STOP");
-                    intervalBtn.setText(R.string.startBtn);
+//                   startStopBtn.setText(R.string.startBtn);
                 }
                 break;
 
@@ -212,13 +212,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         myService = null;
 
-        intervalBtn.setEnabled(false);
+       startStopBtn.setEnabled(false);
         pictureBtn.setEnabled(false);
         connectBtn.setEnabled(true);
-        intervalBtn.setText(R.string.startBtn);
+//       startStopBtn.setText(R.string.startBtn);
         connectBtn.setText(R.string.connectBtn);
-        state.setText(R.string.disconnectedState);
-        state.setTextColor(getResources().getColor(R.color.disconnected));
+        blDeviceState.setText(R.string.disconnectedState);
+        blDeviceState.setTextColor(getResources().getColor(R.color.disconnected));
 
         updateIndicatorMessage();
         spinner.setVisibility(View.GONE);
@@ -238,7 +238,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) { }
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                Log.e("PICS NB TEXT CHANGED", "new text = "+charSequence);
                 model.setPicturesNumber(nbPics.getText().toString());
                 updateIndicatorMessage();
             }
@@ -246,13 +245,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void afterTextChanged(Editable editable) { }
         });
 
-        state = findViewById(R.id.state);
+        blDeviceState = findViewById(R.id.state);
 
         spinner = (ProgressBar)findViewById(R.id.progressBar);
         spinner.setVisibility(View.GONE);
 
-        intervalBtn = findViewById(R.id.intervalBtn);
-        intervalBtn.setOnClickListener(this);
+       startStopBtn = findViewById(R.id.startStopBtn);
+       startStopBtn.setOnClickListener(this);
 
         connectBtn = findViewById(R.id.connectBtn);
         connectBtn.setText(R.string.connectBtn);
@@ -274,7 +273,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) { }
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                Log.e("SHUTTER SPEED TEXT CHANGED", "new text = "+charSequence);
                 model.setShutterSpeed(bulbShutterField.getText().toString());
                 updateIndicatorMessage();
             }
@@ -297,17 +295,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         LinearLayout setTimerLayout = findViewById(R.id.setTimerLayout);
         setTimerBtn.setOnClickListener(this);
         setTimerLayout.setOnClickListener(this);
+
+        blDeviceProgressIndicator = findViewById(R.id.timeProgressField);
     }
 
     /**
      * method that updates the indicator message under the fields to tell the user what the settings he set will result in
      */
     private void updateIndicatorMessage(){
-        TextView time = findViewById(R.id.totalTime);
         if(myService==null)
-            time.setText(model.getTotalTime()+"\r\n(You must connect to device)");
+            blDeviceProgressIndicator.setText(model.getTotalTime()+"\r\n(You must connect to device)");
         else
-            time.setText(model.getTotalTime());
+            blDeviceProgressIndicator.setText(model.getTotalTime());
     }
 
     /**
@@ -322,21 +321,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 switch (action) {
                     case R.integer.DISCOVERING:
                         connectBtn.setEnabled(false);
-                        state.setText(R.string.discoveringState);
-                        state.setTextColor(getResources().getColor(R.color.pairing));
+                        blDeviceState.setText(R.string.discoveringState);
+                        blDeviceState.setTextColor(getResources().getColor(R.color.pairing));
                         spinner.setVisibility(View.VISIBLE);
                         break;
 
                     case R.integer.PAIRING:
-                        state.setText(R.string.pairingState);
-                        state.setTextColor(getResources().getColor(R.color.pairing));
+                        blDeviceState.setText(R.string.pairingState);
+                        blDeviceState.setTextColor(getResources().getColor(R.color.pairing));
                         spinner.setVisibility(View.VISIBLE);
                         break;
 
                     case R.integer.CONNECTING:
                         connectBtn.setEnabled(false);
-                        state.setText(R.string.connectingState);
-                        state.setTextColor(getResources().getColor(R.color.connecting));
+                        blDeviceState.setText(R.string.connectingState);
+                        blDeviceState.setTextColor(getResources().getColor(R.color.connecting));
                         spinner.setVisibility(View.VISIBLE);
                         break;
 
@@ -345,12 +344,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         break;
 
                     case R.integer.CONNECTED:
-                        intervalBtn.setEnabled(true);
+                       startStopBtn.setEnabled(true);
                         pictureBtn.setEnabled(true);
                         connectBtn.setEnabled(true);
                         connectBtn.setText(R.string.disconnectBtn);
-                        state.setText(R.string.connectedState);
-                        state.setTextColor(getResources().getColor(R.color.connected));
+                        blDeviceState.setText(R.string.connectedState);
+                        blDeviceState.setTextColor(getResources().getColor(R.color.connected));
                         updateIndicatorMessage();
                         spinner.setVisibility(View.GONE);
                         break;
@@ -370,9 +369,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         disconnect();
                         break;
 
+                    case R.integer.BL_DEVICE_RUNNING:
+                        startStopBtn.setText(R.string.stopBtn);
+
+                        break;
+
+                    case R.integer.BL_DEVICE_WAITING:
+                        startStopBtn.setText(R.string.startBtn);
+                        updateIndicatorMessage();
+                        break;
+
                     default:
                         break;
                 }
+            }
+        });
+    }
+
+    @Override
+    public void updatePhotoshootProgress(int remaining_time, int remaining_pics, int taken_pics){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                blDeviceProgressIndicator.setText("Time remaining : " + remaining_time +"s"+
+                        "\nNumber of remaining pictures : " + remaining_pics +
+                        "\nNumber of taken pictures : " + taken_pics);
+
             }
         });
     }

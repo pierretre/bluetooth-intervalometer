@@ -8,4 +8,6 @@
     <integer name="DISCOVERING_ERROR">5</integer>
     <integer name="PAIRING_ERROR">6</integer>
     <integer name="CONNECTING_ERROR">7</integer>
+    <integer name="BL_DEVICE_RUNNING">8</integer>
+    <integer name="BL_DEVICE_WAITING">9</integer>
 </resources>
